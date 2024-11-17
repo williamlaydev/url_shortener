@@ -12,10 +12,6 @@ type dbStore struct {
 	conn *pgxpool.Pool
 }
 
-type Url struct {
-	Link string `json:"link"`
-}
-
 func NewDbStore(conn *pgxpool.Pool) *dbStore {
 	return &dbStore{conn: conn}
 }

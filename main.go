@@ -8,8 +8,10 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-	"urlShortener/handler"
+	"urlShortener/handlers"
+	"urlShortener/pages"
 
+	"github.com/a-h/templ"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
@@ -29,15 +31,16 @@ func main() {
 	connPool := createDbConnection()
 	defer connPool.Close()
 
-	UrlHandler := &handler.UrlHandler{DbConn: connPool}
-
 	// Handle API routes
-	mux.HandleFunc("POST /api/url/shorten", UrlHandler.PostShortenUrl)
+	mux.HandleFunc("POST /api/url/shorten", handlers.NewPostShortenUrlHandler(connPool).ServeHTTP)
 	mux.HandleFunc("GET /favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent) // Respond with no content
 	})
+
+	mux.Handle("GET /home", templ.Handler(pages.Home()))
+
 	// Place this last
-	mux.HandleFunc("GET /{shortUrl}", UrlHandler.GetShortenedUrl)
+	mux.HandleFunc("GET /{shortUrl}", handlers.NewGetShortenUrlHandler(connPool).ServeHTTP)
 
 	go func() {
 		log.Print("Server started")
