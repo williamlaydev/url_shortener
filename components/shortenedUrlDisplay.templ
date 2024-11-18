@@ -1,0 +1,19 @@
+package components
+
+templ ShortenedUrlDisplay(newUrl string) {
+
+    <div>
+        <h2 class="text-lg font-medium text-gray-700">Shortened URL:</h2>
+        <a href="https://localhost:8080/" class="text-blue-600 underline" target="_blank">
+        https://localhost:8080/{ newUrl }
+        </a>
+        <button 
+            class="bg-blue-600 text-white mt-4 py-2 px-4 rounded hover:bg-blue-700"
+            hx-target="#main-box"
+            hx-swap="innerHTML"
+            hx-get="/inputBox"
+        >
+            Shorten Another URL
+        </button>
+    </div>
+}

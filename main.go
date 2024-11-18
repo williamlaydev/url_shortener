@@ -8,10 +8,12 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"urlShortener/components"
 	"urlShortener/handlers"
 	"urlShortener/pages"
 
 	"github.com/a-h/templ"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
@@ -31,6 +33,9 @@ func main() {
 	connPool := createDbConnection()
 	defer connPool.Close()
 
+	fileServer := http.FileServer(http.Dir("./static"))
+	mux.Handle("/static/*", http.StripPrefix("/static/", fileServer))
+
 	// Handle API routes
 	mux.HandleFunc("POST /api/url/shorten", handlers.NewPostShortenUrlHandler(connPool).ServeHTTP)
 	mux.HandleFunc("GET /favicon.ico", func(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +43,7 @@ func main() {
 	})
 
 	mux.Handle("GET /home", templ.Handler(pages.Home()))
-
+	mux.Handle("GET /inputBox", templ.Handler(components.UrlInputDisplay()))
 	// Place this last
 	mux.HandleFunc("GET /{shortUrl}", handlers.NewGetShortenUrlHandler(connPool).ServeHTTP)
 
@@ -57,7 +62,18 @@ func createDbConnection() *pgxpool.Pool {
 		log.Fatal("env var DATABASE_URL is missing.")
 	}
 
-	conn, _ := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	config, err := pgxpool.ParseConfig(os.Getenv("DATABASE_URL"))
+	config.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeExec
+
+	if err != nil {
+		log.Fatalf("Failed to parse database config: %v", err)
+	}
+
+	conn, err := pgxpool.NewWithConfig(context.Background(), config)
+
+	if err != nil {
+		log.Fatalf("Failed to create connection pool: %v", err)
+	}
 
 	if err := conn.Ping(context.Background()); err != nil {
 		log.Fatalf("Database failed to connect")

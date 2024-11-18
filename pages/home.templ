@@ -1,8 +1,28 @@
 package pages
 
+import (
+    "urlShortener/components"
+)
+
 templ Home() {
-    <div>
-        Hello, world
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>URL Shortener</title>
+        <link href="static/css/style.css" rel="stylesheet">
+        <script src="https://unpkg.com/htmx.org@2.0.3" integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq" crossorigin="anonymous"></script>
+    </head>
+    <body class="bg-blue-100 flex items-center justify-center h-screen">
+
+        <div id="main-box" class="bg-gray-200 p-8 rounded shadow-md w-full max-w-md">
+            <div>
+       <h1 class="text-2xl font-bold text-center mb-4 text-blue-700">URL Shortener</h1>
+        @components.UrlInputDisplay()
     </div>
+        </div>
+
+    </body>
+    </html>
 }
 

@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -17,13 +18,11 @@ func NewDbStore(conn *pgxpool.Pool) *dbStore {
 }
 
 func (d *dbStore) CreateNewShortenedUrl(url string, shortenedUrl string) error {
-	query := `INSERT INTO urls (link, shortened) VALUES (@url, @shortenedUrl)`
-	args := pgx.NamedArgs{
-		"url":          url,
-		"shortenedUrl": shortenedUrl,
-	}
+	query := `INSERT INTO urls (link, shortened) VALUES ($1, $2)`
 
-	_, err := d.conn.Exec(context.Background(), query, args)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+
+	_, err := d.conn.Exec(ctx, query, url, shortenedUrl)
 
 	if err != nil {
 		return err
@@ -33,12 +32,11 @@ func (d *dbStore) CreateNewShortenedUrl(url string, shortenedUrl string) error {
 }
 
 func (d *dbStore) RetrieveUrlFromShortened(shortenedUrl string) (string, error) {
-	query := `SELECT link FROM urls WHERE shortened=@shortenedUrl`
-	args := pgx.NamedArgs{
-		"shortenedUrl": shortenedUrl,
-	}
+	query := `SELECT link FROM urls WHERE shortened=@$1`
 
-	rows, err := d.conn.Query(context.Background(), query, args)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+
+	rows, err := d.conn.Query(ctx, query, shortenedUrl)
 
 	if err != nil {
 		log.Printf("err1: %v\n", err)
