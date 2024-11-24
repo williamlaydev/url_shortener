@@ -23,7 +23,7 @@ FROM alpine:latest
 WORKDIR /app
 
 # Copy the compiled binary from the builder stage
-COPY --from=builder /app/url-shortener .
+COPY --from=builder /app/url-shortener . 
 COPY --from=builder /app/static ./static
 COPY --from=builder /app/.env .env
 
